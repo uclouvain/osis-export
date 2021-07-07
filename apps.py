@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class OsisExportConfig(AppConfig):
-    name = 'osis_export'
+    name = "osis_export"

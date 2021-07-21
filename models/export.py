@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 from base.models.person import Person
 from osis_async.models import AsyncTask
 from osis_document.contrib import FileField
+from osis_export.models.enums.types import ExportTypes
 
 
 class Export(models.Model):
@@ -19,5 +20,6 @@ class Export(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     async_task = models.ForeignKey(AsyncTask, on_delete=models.CASCADE)
     file = FileField(null=True)
+    type = models.CharField(_("Type"), choices=ExportTypes.choices(), max_length=25)
 
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)

@@ -27,6 +27,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created at')),
                 ('async_task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='osis_async.AsyncTask')),
                 ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='base.Person')),
+                ('type', models.CharField(choices=[('EXCEL', 'Excel'), ('PDF', 'PDF')], default='EXCEL', max_length=25, verbose_name='Type')),
             ],
         ),
     ]

@@ -6,7 +6,7 @@ from osis_export.models.enums.types import ExportTypes
 
 
 @register.inclusion_tag("osis_export/export.html", takes_context=True)
-def excel_export_task(
+def pdf_export_task(
     context,
     object_list,
     async_task_name,
@@ -22,7 +22,7 @@ def excel_export_task(
     # ClassName = apps.get_model(app_label, model_name)
 
     return {
-        "export_button_text": _("Export in Excel file"),
+        "export_button_text": _("Export in PDF file"),
         "form": ExportForm(
             initial={
                 "async_task_name": async_task_name,
@@ -33,7 +33,7 @@ def excel_export_task(
                 "filters": context.request.GET,
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
-                "type": ExportTypes.EXCEL.name,
+                "type": ExportTypes.PDF.name,
             }
         ),
     }

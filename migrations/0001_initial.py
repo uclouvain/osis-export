@@ -24,10 +24,11 @@ class Migration(migrations.Migration):
                 ('model_name', models.CharField(max_length=100, verbose_name='Called from model name')),
                 ('filters', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True, verbose_name='Filtres')),
                 ('file', osis_document.contrib.fields.FileField(base_field=models.UUIDField(), default=list, null=True, size=None)),
+                ('file_name', models.CharField(max_length=100, verbose_name='Nom de fichier')),
+                ('type', models.CharField(choices=[('EXCEL', 'Excel'), ('PDF', 'PDF')], max_length=25, verbose_name='Type')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created at')),
                 ('async_task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='osis_async.AsyncTask')),
                 ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='base.Person')),
-                ('type', models.CharField(choices=[('EXCEL', 'Excel'), ('PDF', 'PDF')], default='EXCEL', max_length=25, verbose_name='Type')),
             ],
         ),
     ]

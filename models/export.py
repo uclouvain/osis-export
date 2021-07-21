@@ -20,6 +20,7 @@ class Export(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     async_task = models.ForeignKey(AsyncTask, on_delete=models.CASCADE)
     file = FileField(null=True)
+    file_name = models.CharField(_("File name"), max_length=100)
     type = models.CharField(_("Type"), choices=ExportTypes.choices(), max_length=25)
 
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)

@@ -8,7 +8,6 @@ class ExportForm(forms.ModelForm):
     async_task_description = forms.CharField(widget=forms.HiddenInput())
     async_task_ttl = forms.IntegerField(required=False, widget=forms.HiddenInput())
     next = forms.CharField(widget=forms.HiddenInput())
-    type = forms.CharField(widget=forms.HiddenInput())
 
     class Meta:
         model = Export
@@ -16,9 +15,13 @@ class ExportForm(forms.ModelForm):
             "app_label",
             "model_name",
             "filters",
+            "type",
+            "file_name",
         )
         widgets = {
             "app_label": forms.HiddenInput(),
             "model_name": forms.HiddenInput(),
             "filters": forms.HiddenInput(),
+            "type": forms.HiddenInput(),
+            "file_name": forms.HiddenInput(),
         }

@@ -27,6 +27,7 @@ class AsyncExport(BaseFormView):
         export.async_task = async_task
         export.person = person
         export.type = cleaned_data.get("type")
+        export.file_name = cleaned_data.get("file_name")
         export.save()
         # redirect to the initial page
         return HttpResponseRedirect(self.request.POST.get("next", "/"))

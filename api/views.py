@@ -2,11 +2,12 @@ from django.http import HttpResponseRedirect
 from django.views.generic.edit import BaseFormView
 
 from osis_async.models import AsyncTask
-from osis_export.api.forms import ExcelForm
+from osis_export.api.forms import ExportForm
 
 
 class AsyncExport(BaseFormView):
     """The base class that represents an asynchronous export."""
+    form_class = ExportForm
 
     def form_valid(self, form):
         cleaned_data = form.cleaned_data
@@ -25,14 +26,7 @@ class AsyncExport(BaseFormView):
         export = form.save(commit=False)
         export.async_task = async_task
         export.person = person
+        export.type = cleaned_data.get("type")
         export.save()
         # redirect to the initial page
         return HttpResponseRedirect(self.request.POST.get("next", "/"))
-
-
-class ExcelAsyncExport(AsyncExport):
-    form_class = ExcelForm
-
-
-class PdfAsyncExport(AsyncExport):
-    pass

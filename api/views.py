@@ -24,7 +24,7 @@ class AsyncExport(BaseFormView):
         )
 
         export = form.save(commit=False)
-        export.async_task = async_task
+        export.job_uuid = async_task.uuid
         export.person = person
         export.type = cleaned_data.get("type")
         export.file_name = cleaned_data.get("file_name")

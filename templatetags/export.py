@@ -8,13 +8,17 @@ from osis_export.models.enums.types import ExportTypes
 
 
 @register.inclusion_tag("osis_export/export.html", takes_context=True)
-def pdf_export_task(
+def export_task(
     context,
+    export_type,
     async_task_name,
     async_task_description,
     async_task_ttl=None,
     file_name=None,
 ):
+    if export_type not in ExportTypes.get_values():
+        raise ValueError("type must be in the ExportTypes values")
+
     context_view = context['view']
     called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
 
@@ -23,7 +27,7 @@ def pdf_export_task(
         file_name = slugify(f"export-{async_task_name}-{today}")
 
     return {
-        "export_button_text": _("Export in PDF file"),
+        "export_button_text": _(f"Export in {export_type} file"),
         "form": ExportForm(
             initial={
                 "async_task_name": async_task_name,
@@ -33,7 +37,7 @@ def pdf_export_task(
                 "filters": context.request.GET,
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
-                "type": ExportTypes.PDF.name,
+                "type": export_type,
                 "file_name": file_name,
             }
         ),

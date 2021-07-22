@@ -10,19 +10,13 @@ from osis_export.models.enums.types import ExportTypes
 @register.inclusion_tag("osis_export/export.html", takes_context=True)
 def excel_export_task(
     context,
-    object_list,
     async_task_name,
     async_task_description,
     async_task_ttl=None,
     file_name=None,
 ):
-    if hasattr(object_list, "object_list"):
-        object_list = object_list.object_list.first()
-
-    app_label = object_list._meta.app_label
-    model_name = object_list.__class__.__name__
-    # Then to instantiate the model from it's app just do :
-    # ClassName = apps.get_model(app_label, model_name)
+    context_view = context['view']
+    called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
 
     if file_name is None:
         today = datetime.today().date().isoformat()
@@ -35,8 +29,7 @@ def excel_export_task(
                 "async_task_name": async_task_name,
                 "async_task_description": async_task_description,
                 "async_task_ttl": async_task_ttl,
-                "app_label": app_label,
-                "model_name": model_name,
+                "called_from_class": called_from_class,
                 "filters": context.request.GET,
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),

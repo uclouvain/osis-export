@@ -12,15 +12,13 @@ class ExportForm(forms.ModelForm):
     class Meta:
         model = Export
         fields = (
-            "app_label",
-            "model_name",
+            "called_from_class",
             "filters",
             "type",
             "file_name",
         )
         widgets = {
-            "app_label": forms.HiddenInput(),
-            "model_name": forms.HiddenInput(),
+            "called_from_class": forms.HiddenInput(),
             "filters": forms.HiddenInput(),
             "type": forms.HiddenInput(),
             "file_name": forms.HiddenInput(),

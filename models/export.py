@@ -13,8 +13,7 @@ class Export(models.Model):
     linked to an async task, representing the Export to the end user. And the result
     of the export will be store in a linked DocumentFile."""
 
-    app_label = models.CharField(_("Called from app"), max_length=100)
-    model_name = models.CharField(_("Called from model name"), max_length=100)
+    called_from_class = models.TextField(help_text=_("Export called from this class"))
     filters = JSONField(_("Filters"), null=True, blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     job_uuid = models.UUIDField(_("UUID of the related task job"))

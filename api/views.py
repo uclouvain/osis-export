@@ -12,16 +12,17 @@ class AsyncExport(BaseFormView):
     def form_valid(self, form):
         cleaned_data = form.cleaned_data
         person = self.request.user.person
+        async_task_kwargs = {
+            "name": cleaned_data.get("async_task_name"),
+            "description": cleaned_data.get("async_task_description"),
+            "person": person,
+        }
 
-        async_task = AsyncTask.objects.create(
-            name=cleaned_data.get("async_task_name"),
-            description=cleaned_data.get("async_task_description"),
-            time_to_live=(
-                cleaned_data.get("async_task_ttl")
-                or AsyncTask._meta.get_field("time_to_live").get_default()
-            ),
-            person=person,
-        )
+        async_task_ttl = cleaned_data.get("async_task_ttl", None)
+        if async_task_ttl is not None:
+            async_task_kwargs["time_to_live"] = async_task_ttl
+
+        async_task = AsyncTask.objects.create(**async_task_kwargs)
 
         export = form.save(commit=False)
         export.job_uuid = async_task.uuid

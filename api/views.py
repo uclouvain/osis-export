@@ -1,5 +1,7 @@
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.views.generic.edit import BaseFormView
+from django.utils.translation import gettext as _
 
 from osis_async.models import AsyncTask
 from osis_export.api.forms import ExportForm
@@ -7,7 +9,17 @@ from osis_export.api.forms import ExportForm
 
 class AsyncExport(BaseFormView):
     """The base class that represents an asynchronous export."""
+
     form_class = ExportForm
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            f"{_('The requested export is not valid, please contact the site administrator')} : {form.errors}",
+            extra_tags="safe",
+        )
+        # redirect to the initial page
+        return HttpResponseRedirect(self.request.POST.get("next", "/"))
 
     def form_valid(self, form):
         cleaned_data = form.cleaned_data

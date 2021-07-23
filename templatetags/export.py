@@ -9,35 +9,31 @@ from osis_export.models.enums.types import ExportTypes
 
 @register.inclusion_tag("osis_export/export.html", takes_context=True)
 def export_task(
-    context,
-    export_type,
-    async_task_name,
-    async_task_description,
-    async_task_ttl=None,
-    file_name=None,
+    context, file_type, name, description, ttl=None, file_name=None, **kwargs
 ):
-    if export_type not in ExportTypes.get_values():
+    if file_type not in ExportTypes.get_names():
         raise ValueError("type must be in the ExportTypes values")
 
-    context_view = context['view']
+    context_view = context["view"]
     called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
 
     if file_name is None:
-        today = datetime.today().date().isoformat()
-        file_name = slugify(f"export-{async_task_name}-{today}")
+        today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        file_name = slugify(f"export-{name}-{today}")
 
+    filters = {**context.request.GET, **kwargs}
     return {
-        "export_button_text": _(f"Export in {export_type} file"),
+        "export_button_text": _(f"Export in {ExportTypes.get_value(file_type)} file"),
         "form": ExportForm(
             initial={
-                "async_task_name": async_task_name,
-                "async_task_description": async_task_description,
-                "async_task_ttl": async_task_ttl,
+                "async_task_name": name,
+                "async_task_description": description,
+                "async_task_ttl": ttl,
                 "called_from_class": called_from_class,
-                "filters": context.request.GET,
+                "filters": filters,
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
-                "type": export_type,
+                "type": file_type,
                 "file_name": file_name,
             }
         ),

@@ -1,4 +1,3 @@
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext as _
 
@@ -24,7 +23,7 @@ class Export(models.Model):
     of the export will be store in a linked DocumentFile."""
 
     called_from_class = models.TextField(help_text=_("Export called from this class"))
-    filters = JSONField(_("Filters"), null=True, blank=True)
+    filters = models.TextField(_("Filters"), blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     job_uuid = models.UUIDField(_("UUID of the related task job"))
     file = FileField(null=True)

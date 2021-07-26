@@ -21,7 +21,6 @@ def export_task(
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         file_name = slugify(f"export-{name}-{today}")
 
-    filters = {**context.request.GET, **kwargs}
     return {
         "export_button_text": _(f"Export in {ExportTypes.get_value(file_type)} file"),
         "form": ExportForm(
@@ -30,7 +29,7 @@ def export_task(
                 "async_task_description": description,
                 "async_task_ttl": ttl,
                 "called_from_class": called_from_class,
-                "filters": filters,
+                "filters": context.request.GET.urlencode(),
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
                 "type": file_type,

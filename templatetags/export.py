@@ -16,6 +16,7 @@ def export_task(
 
     context_view = context["view"]
     called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
+    # TODO When export mixin will be done, check if the class inherit from one of them
 
     if file_name is None:
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")

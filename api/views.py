@@ -37,6 +37,8 @@ class AsyncExport(BaseFormView):
         async_task = AsyncTask.objects.create(**async_task_kwargs)
 
         export = form.save(commit=False)
+        # TODO When export mixin will be done, check if the class inherit from one of
+        #     them
         export.job_uuid = async_task.uuid
         export.person = person
         export.type = cleaned_data.get("type")

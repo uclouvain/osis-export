@@ -11,12 +11,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for export in Export.objects.not_generated():
-            # Import the base view class
-            BaseClass = import_string(export.called_from_class)
+            # Import and instantiate the base view class
+            base_class_instance = import_string(export.called_from_class)()
             # Generate a dict from the saved querydict
             filters_dict = QueryDict(export.filters).dict()
-            # Pass it to the filterset class of the base class
-            filterset = BaseClass.filterset_class(data=filters_dict)
+            # Now get the filterset class and instantiate it with the filters
+            filterset = base_class_instance.get_filterset_class()(data=filters_dict)
+            filterset.is_valid()
             # and finally get back the initial queryset
             initial_queryset = filterset.qs
 

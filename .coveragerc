@@ -1,0 +1,15 @@
+[run]
+branch = True
+source = osis_export
+omit =
+    */migrations/*
+    venv/*
+    */tests/*
+    */management/*
+    */admin.py
+    */tasks/*
+
+[report]
+skip_covered = True
+show_missing = True
+sort = Miss

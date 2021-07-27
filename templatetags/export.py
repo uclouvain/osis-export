@@ -19,7 +19,7 @@ def export_task(
 
     if file_name is None:
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        file_name = slugify(f"export-{name}-{today}")
+        file_name = f"export-{name}-{today}"
 
     return {
         "export_button_text": _(f"Export in {ExportTypes.get_value(file_type)} file"),
@@ -33,7 +33,7 @@ def export_task(
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
                 "type": file_type,
-                "file_name": file_name,
+                "file_name": slugify(file_name),
             }
         ),
     }

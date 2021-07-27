@@ -1,21 +1,24 @@
 from unittest import mock
 
 from django.template import Context, Template
+from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
-from django.test import TestCase
 from django.urls import reverse
 from django.utils.datetime_safe import datetime
 
+import osis_export.tests.export_test.views
 from base.tests.factories.user import UserFactory
 
 
+@override_settings(ROOT_URLCONF="osis_export.tests.export_test.urls")
 class TestTemplateTags(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
-        cls.context = Context({"view": cls})
-        # TODO create a test app with a registered url to reverse
-        cls.context.request = RequestFactory().get(reverse("version_program"))
+        cls.context = Context(
+            {"view": osis_export.tests.export_test.views.TestViewSearch}
+        )
+        cls.context.request = RequestFactory().get(reverse("export-test-list"))
 
     def setUp(self) -> None:
         self.client.force_login(self.user)
@@ -31,7 +34,7 @@ class TestTemplateTags(TestCase):
         ):
             rendered_template = template_to_render.render(self.context)
         self.assertInHTML(
-            "<input type='hidden' name='called_from_class' value='osis_export.tests.test_templatetags.type' id='id_called_from_class'>",
+            "<input type='hidden' name='called_from_class' value='osis_export.tests.export_test.views.FilterMixinRenames' id='id_called_from_class'>",
             rendered_template,
         )
         self.assertInHTML(
@@ -59,7 +62,7 @@ class TestTemplateTags(TestCase):
             rendered_template,
         )
         self.assertInHTML(
-            "<input type='hidden' name='next' value='/program_management/' id='id_next'>",
+            "<input type='hidden' name='next' value='/' id='id_next'>",
             rendered_template,
         )
         self.assertInHTML(

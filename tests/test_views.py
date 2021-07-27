@@ -18,26 +18,57 @@ class TestViews(TestCase):
             "filters": "",
             "type": "EXCEL",
             "file_name": "file test name",
-            "next": "/",
+            "next": "/some-url",
         }
+        cls.url = reverse("osis_export:export")
 
     def setUp(self) -> None:
         self.client.force_login(self.person.user)
 
-    def test_async_export_view_returns_errors_message_if_invalid_data_given(self):
+    def test_async_export_view_returns_errors_message_if_no_data_given(self):
         # send a post with no data must raise an exception as their is required fields
-        url = reverse("osis_export:export")
+        url = self.url
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, 302)
         response = self.client.post(url, {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertIsNot(len(list(response.context["messages"])), 0)
+        self.assertIn(
+            "called_from_class",
+            list(response.context["messages"])[0].message,
+        )
+
+    def test_async_export_view_must_redirect_to_next_parameter_if_valid(self):
+        response = self.client.post(self.url, self.export_data)
+        self.assertEqual(response.status_code, 302)
+        # must redirect to the given 'next' parameter
+        self.assertEqual(response.url, self.export_data["next"])
+
+    def test_async_export_view_must_redirect_to_slash_if_valid_and_next_not_set(self):
+        data = self.export_data.copy()
+        del data["next"]
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 302)
+        # must redirect to the given 'next' parameter
+        self.assertEqual(response.url, "/")
+
+    def test_async_export_view_must_redirect_to_next_parameter_if_invalid(self):
+        response = self.client.post(self.url, {"next": self.export_data["next"]})
+        self.assertEqual(response.status_code, 302)
+        # must redirect to the given 'next' parameter
+        self.assertEqual(response.url, self.export_data["next"])
+
+    def test_async_export_view_must_redirect_to_slash_if_invalid_and_next_not_set(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, 302)
+        # must redirect to the given 'next' parameter
+        self.assertEqual(response.url, "/")
 
     def test_async_export_view_set_default_ttl_if_not_given(self):
         self.assertEqual(Export.objects.count(), 0)
         self.assertEqual(AsyncTask.objects.count(), 0)
 
-        response = self.client.post(reverse("osis_export:export"), self.export_data)
+        response = self.client.post(self.url, self.export_data)
         self.assertEqual(response.status_code, 302)
 
         # Both Export and related AsyncTask must have been created
@@ -75,8 +106,8 @@ class TestViews(TestCase):
         self.assertEqual(Export.objects.count(), 0)
         self.assertEqual(AsyncTask.objects.count(), 0)
 
-        self.export_data["async_task_ttl"] = 42
-        response = self.client.post(reverse("osis_export:export"), self.export_data)
+        data = {**self.export_data, "async_task_ttl": 42}
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
 
         # Both Export and related AsyncTask must have been created

@@ -6,6 +6,7 @@ from osis_async.models import AsyncTask
 from osis_async.models.enums import TaskStates
 from osis_document.contrib import FileField
 from osis_export.models.enums.types import ExportTypes
+from osis_export.models.validators import validate_class_inherit_from_export_mixin
 
 
 class ExportManager(models.Manager):
@@ -22,7 +23,10 @@ class Export(models.Model):
     linked to an async task, representing the Export to the end user. And the result
     of the export will be store in a linked DocumentFile."""
 
-    called_from_class = models.TextField(help_text=_("Export called from this class"))
+    called_from_class = models.TextField(
+        help_text=_("Export called from this class"),
+        validators=[validate_class_inherit_from_export_mixin],
+    )
     filters = models.TextField(_("Filters"), blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     job_uuid = models.UUIDField(_("UUID of the related task job"))

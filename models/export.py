@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.db import models
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
 
 from base.models.person import Person
-from osis_async.models import AsyncTask
-from osis_async.models.enums import TaskStates
 from osis_document.contrib import FileField
 from osis_export.models.enums.types import ExportTypes
 from osis_export.models.validators import validate_class_inherit_from_export_mixin
@@ -11,9 +11,8 @@ from osis_export.models.validators import validate_class_inherit_from_export_mix
 
 class ExportManager(models.Manager):
     def not_generated(self):
-        pending_tasks = AsyncTask.objects.filter(
-            state=TaskStates.PENDING.name
-        ).values_list("uuid", flat=True)
+        asynchronous_manager = import_string(settings.ASYNCHRONOUS_MANAGER_CLS)()
+        pending_tasks = asynchronous_manager.get_pending_tasks()
         return self.get_queryset().filter(job_uuid__in=pending_tasks)
 
 

@@ -27,6 +27,37 @@ INSTALLED_APPS = (
 )
 ```
 
+## Specifying an asynchronous manager class
+
+In order to decouple the asynchronous manager task, you must define the one you want to use like following.
+
+### Create your interface
+
+The manager must inherit from the interface `AsyncManager` define in `osis_export/contrib/async_manager.py` and implement all the methods :
+
+```python
+from osis_async.models import AsyncTask
+from osis_async.models.enums import TaskStates
+from osis_export.contrib.async_manager import AsyncManager
+
+
+class AsyncTaskManager(AsyncManager):
+    def get_pending_tasks(self):
+        pending_tasks = AsyncTask.objects.filter(
+            state=TaskStates.PENDING.name
+        ).values_list("uuid", flat=True)
+        return pending_tasks
+```
+
+The example bellow uses the `osis_async` module.
+
+### Add it to your settings
+
+Add the full path to the asynchronous manager class in your settings :
+```python
+ASYNCHRONOUS_MANAGER_CLS = 'backoffice.settings.osis-export.async_manager.AsyncTaskManager'
+```
+
 # Using OSIS Export
 
 `osis_export` provides mixin views and a Django template tag to make it possible for the end user to generate exports by simply clicking on a button.

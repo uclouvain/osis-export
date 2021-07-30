@@ -24,25 +24,23 @@ class AsyncExport(BaseFormView):
     def form_valid(self, form):
         cleaned_data = form.cleaned_data
         person = self.request.user.person
+
         async_task_kwargs = {
             "name": cleaned_data.get("async_task_name"),
             "description": cleaned_data.get("async_task_description"),
             "person": person,
         }
-
         async_task_ttl = cleaned_data.get("async_task_ttl", None)
         if async_task_ttl is not None:
             async_task_kwargs["time_to_live"] = async_task_ttl
-
         async_task = AsyncTask.objects.create(**async_task_kwargs)
 
         export = form.save(commit=False)
-        # TODO When export mixin will be done, check if the class inherit from one of
-        #     them
         export.job_uuid = async_task.uuid
         export.person = person
         export.type = cleaned_data.get("type")
         export.file_name = cleaned_data.get("file_name")
         export.save()
+
         # redirect to the initial page
         return HttpResponseRedirect(self.request.POST.get("next", "/"))

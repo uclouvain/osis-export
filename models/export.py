@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from base.models.person import Person
 from osis_document.contrib import FileField
 from osis_export.models.enums.types import ExportTypes
-from osis_export.models.validators import validate_class_inherit_from_export_mixin
+from osis_export.models.validators import validate_export_mixin_inheritance
 
 
 class ExportManager(models.Manager):
@@ -24,7 +24,7 @@ class Export(models.Model):
 
     called_from_class = models.TextField(
         help_text=_("Export called from this class"),
-        validators=[validate_class_inherit_from_export_mixin],
+        validators=[validate_export_mixin_inheritance],
     )
     filters = models.TextField(_("Filters"), blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")

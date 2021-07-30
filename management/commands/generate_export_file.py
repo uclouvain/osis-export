@@ -1,9 +1,12 @@
+import sys
+
+from django.core import signing
 from django.core.management.base import BaseCommand
-from django.http import QueryDict
 from django.utils.module_loading import import_string
 
+from osis_document.models import Upload, Token
+from osis_document.utils import calculate_md5, get_token
 from osis_export.models import Export
-from osis_export.models.enums.types import ExportTypes
 
 
 class Command(BaseCommand):
@@ -13,17 +16,25 @@ class Command(BaseCommand):
         for export in Export.objects.not_generated():
             # Import and instantiate the base view class
             base_class_instance = import_string(export.called_from_class)()
-            # Generate a dict from the saved querydict
-            filters_dict = QueryDict(export.filters).dict()
-            # Now get the filterset class and instantiate it with the filters
-            filterset = base_class_instance.get_filterset_class()(data=filters_dict)
-            filterset.is_valid()
-            # and finally get back the initial queryset
-            initial_queryset = filterset.qs
-
-            if export.type == ExportTypes.EXCEL.name:
-                # use the Excel file generator
-                pass
-            elif export.type == ExportTypes.PDF.name:
-                # use the PDF file generator
-                pass
+            # generate the wanted file by calling the method on mixin
+            file = base_class_instance.generate_file(
+                filters=export.filters,
+                file_name=export.file_name,
+            )
+            # add this file to an Upload object in order to reuse osis_document
+            md5 = calculate_md5(file)
+            upload = Upload.objects.create(
+                file=file,
+                mimetype=base_class_instance.get_mimetype(),
+                size=sys.getsizeof(file),
+                metadata={"md5": md5},
+            )
+            # create a related token
+            token = Token.objects.create(
+                upload_id=upload.uuid,
+                token=signing.dumps(str(upload.uuid)),
+            )
+            # add it and save to the FileField
+            upload.tokens.add(token)
+            export.file = [token.token]
+            export.save()

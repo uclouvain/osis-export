@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from django.template.defaulttags import register
 from django.utils.datetime_safe import datetime
 from django.utils.text import slugify
@@ -18,9 +17,7 @@ def export_task(
 
     context_view = context["view"]
     called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
-    if not validate_export_mixin_inheritance(called_from_class):
-        error_msg = "class does not inherit from ExportMixin and FileExportMixin"
-        raise ValidationError(error_msg)
+    validate_export_mixin_inheritance(called_from_class)
 
     if file_name is None:
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")

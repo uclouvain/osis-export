@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 
 from osis_export.models import Export
 from osis_export.models.validators import validate_export_mixin_inheritance
@@ -28,7 +27,5 @@ class ExportForm(forms.ModelForm):
 
     def clean_called_from_class(self):
         called_from_class = self.cleaned_data.get("called_from_class")
-        if not validate_export_mixin_inheritance(called_from_class):
-            error_msg = "class does not inherit from ExportMixin and FileExportMixin"
-            raise ValidationError(error_msg)
+        validate_export_mixin_inheritance(called_from_class)
         return called_from_class

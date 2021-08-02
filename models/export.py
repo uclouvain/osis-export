@@ -29,7 +29,7 @@ class Export(models.Model):
     filters = models.TextField(_("Filters"), blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     job_uuid = models.UUIDField(_("UUID of the related task job"))
-    file = FileField(null=True)
+    file = FileField(null=True, blank=True)
     file_name = models.CharField(_("File name"), max_length=100)
     type = models.CharField(_("Type"), choices=ExportTypes.choices(), max_length=25)
 

@@ -1,9 +1,8 @@
-import datetime
-
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.http import QueryDict
 from openpyxl import Workbook
+from openpyxl.styles import Font
 
 
 class ExportMixin:
@@ -43,26 +42,41 @@ class ExcelFileExportMixin(FileExportMixin):
     def get_mimetype(self):
         return "application/vnd.ms-excel"
 
-    def generate_file(self, **kwargs):
-        export_objects = self.get_export_objects(filters=kwargs.get("filters"))
+    def get_header(self):
+        raise NotImplementedError
 
-        wb = Workbook()
+    def get_data(self):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_attr(export, data):
+        """Return str representation of `export.data`, or an empty string if None."""
+        return str(getattr(export, data)) if data is not None else ""
+
+    def generate_file(self, **kwargs):
+        workbook = Workbook()
 
         # grab the active worksheet
-        ws = wb.active
+        worksheet = workbook.active
 
-        # Data can be assigned directly to cells
-        ws['A1'] = 42
+        # add headers
+        worksheet.append(self.get_header())
+        cells = worksheet.iter_rows("A1:AAA1")
+        for col in cells:
+            for cell in col:
+                cell.font = Font(bold=True)
 
-        # Rows can also be appended
-        ws.append([1, 2, 3])
+        # add data
+        export_objects = self.get_export_objects(filters=kwargs.get("filters"))
+        sheet_datas = self.get_data()
+        for export in export_objects.all():
+            worksheet.append(
+                [self.get_attr(export, sheet_data) for sheet_data in sheet_datas]
+            )
 
-        # Python types will automatically be converted
-        ws['A2'] = datetime.datetime.now()
-
-        file_name = f"{kwargs.get('file_name')}.xlsx"
         # Save the file
-        wb.save(file_name)
+        file_name = f"{kwargs.get('file_name')}.xlsx"
+        workbook.save(file_name)
 
         return file_name
 

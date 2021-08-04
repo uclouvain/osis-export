@@ -1,4 +1,6 @@
-from django.core.exceptions import ValidationError
+from tempfile import NamedTemporaryFile
+
+from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.db.models import QuerySet
 from django.http import QueryDict
 from openpyxl import Workbook
@@ -31,16 +33,26 @@ class FilterSetExportMixin(QuerySetExportMixin):
 
 
 class FileExportMixin:
+    file_extension = None
+    mimetype = None
+
     def generate_file(self, filters):
         raise NotImplementedError
 
     def get_mimetype(self):
-        raise NotImplementedError
+        if self.mimetype is None:
+            raise ImproperlyConfigured("Specify mimetype on mixin class")
+        return self.mimetype
+
+    def get_file_extension(self):
+        if self.file_extension is None:
+            raise ImproperlyConfigured("Specify file_extension on mixin class")
+        return self.file_extension
 
 
 class ExcelFileExportMixin(FileExportMixin):
-    def get_mimetype(self):
-        return "application/vnd.ms-excel"
+    file_extension = ".xlsx"
+    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
     def get_header(self):
         raise NotImplementedError
@@ -74,11 +86,11 @@ class ExcelFileExportMixin(FileExportMixin):
                 [self.get_attr(export, sheet_data) for sheet_data in sheet_datas]
             )
 
-        # Save the file
-        file_name = f"{kwargs.get('file_name')}.xlsx"
-        workbook.save(file_name)
-
-        return file_name
+        # stream back the file
+        with NamedTemporaryFile() as tmp:
+            workbook.save(tmp.name)
+            tmp.seek(0)
+            return tmp.read()
 
 
 class ExcelFilterSetExportMixin(FilterSetExportMixin, ExcelFileExportMixin):

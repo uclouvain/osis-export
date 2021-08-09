@@ -1,7 +1,6 @@
 from django import forms
 
 from osis_export.models import Export
-from osis_export.models.validators import validate_export_mixin_inheritance
 
 
 class ExportForm(forms.ModelForm):
@@ -24,8 +23,3 @@ class ExportForm(forms.ModelForm):
             "type": forms.HiddenInput(),
             "file_name": forms.HiddenInput(),
         }
-
-    def clean_called_from_class(self):
-        called_from_class = self.cleaned_data.get("called_from_class")
-        validate_export_mixin_inheritance(called_from_class)
-        return called_from_class

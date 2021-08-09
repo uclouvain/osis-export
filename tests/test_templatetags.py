@@ -16,7 +16,7 @@ class TestTemplateTags(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory()
         cls.context = Context(
-            {"view": osis_export.tests.export_test.views.TestViewSearch}
+            {"view": osis_export.tests.export_test.views.TestViewSearch()}
         )
         cls.context.request = RequestFactory().get(reverse("export-test-list"))
 
@@ -34,7 +34,7 @@ class TestTemplateTags(TestCase):
         ):
             rendered_template = template_to_render.render(self.context)
         self.assertInHTML(
-            "<input type='hidden' name='called_from_class' value='osis_export.tests.export_test.views.FilterMixinRenames' id='id_called_from_class'>",
+            "<input type='hidden' name='called_from_class' value='osis_export.tests.export_test.views.TestViewSearch' id='id_called_from_class'>",
             rendered_template,
         )
         self.assertInHTML(

@@ -14,7 +14,7 @@ class TestViews(TestCase):
         cls.export_data = {
             "async_task_name": "test name",
             "async_task_description": "test description",
-            "called_from_class": cls.__class__.__name__,
+            "called_from_class": "osis_export.tests.export_test.views.TestViewSearch",
             "filters": "",
             "type": "EXCEL",
             "file_name": "file test name",

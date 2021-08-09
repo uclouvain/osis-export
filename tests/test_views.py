@@ -1,13 +1,25 @@
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
+from django_filters.views import FilterView
+from openpyxl import load_workbook
+from openpyxl.styles import Font
 
 from base.tests.factories.person import PersonFactory
 from osis_async.models import AsyncTask
 from osis_async.models.enums import TaskStates
+from osis_export.contrib.export_mixins import (
+    ExcelFileExportMixin,
+    ExportMixin,
+    FileExportMixin,
+)
 from osis_export.models import Export
+from osis_export.tests.export_test.models import DummyModel
+from osis_export.tests.export_test.views import TestViewSearch
 
 
-class TestViews(TestCase):
+class TestAsyncExport(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.person = PersonFactory()
@@ -117,3 +129,118 @@ class TestViews(TestCase):
         # and the value of the async task ttl should be set
         async_task = AsyncTask.objects.get()
         self.assertEqual(async_task.time_to_live, 42)
+
+
+class TestFileExportMixin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        class MyClass(FileExportMixin):
+            pass
+
+        cls.my_instance = MyClass()
+        cls.MyClass = MyClass
+
+    def test_file_export_mixin_must_specify_mimetype(self):
+        with self.assertRaises(ImproperlyConfigured):
+            self.my_instance.get_mimetype()
+
+        self.MyClass.mimetype = (
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        self.assertEqual(self.my_instance.get_mimetype(), self.MyClass.mimetype)
+
+    def test_file_export_mixin_must_specify_file_extension(self):
+        with self.assertRaises(ImproperlyConfigured):
+            self.my_instance.get_file_extension()
+
+        self.MyClass.file_extension = ".xlsx"
+        self.assertEqual(
+            self.my_instance.get_file_extension(),
+            self.MyClass.file_extension,
+        )
+
+
+class TestExcelFileExportMixin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        class MyExportableObject:
+            test_param = "test"
+            test_param_2 = None
+            test_param_3 = "This value should not appear on Excel export"
+            test_param_4 = "Some value"
+
+        cls.my_object = MyExportableObject()
+
+        class MyClass(ExportMixin, ExcelFileExportMixin):
+            def get_export_objects(self, **kwargs):
+                return [MyExportableObject() for _ in range(10)]
+
+            def get_header(self):
+                return ["test param", "test param 2", "test param 4"]
+
+            def get_data(self):
+                return ["test_param", "test_param_2", "test_param_4"]
+
+        cls.my_class_instance = MyClass()
+
+    def test_get_attr_returns_expected_data(self):
+        my_attr = ExcelFileExportMixin.get_attr(self.my_object, "test_param")
+        self.assertEqual(my_attr, self.my_object.test_param)
+        my_attr = ExcelFileExportMixin.get_attr(self.my_object, "test_param_2")
+        self.assertEqual(my_attr, "")
+
+    def test_generate_file_creates_excel_file(self):
+        file = self.my_class_instance.generate_file()
+        self.assertEqual(type(file), bytes)
+        workbook = load_workbook(ContentFile(file))
+        worksheet = workbook.active
+        # check if the first row is in bold style
+        cells = worksheet.iter_rows("A1:C1")
+        # check that we have 11 rows : 1 for the header and 10 for data
+        self.assertEqual(worksheet.get_highest_row(), 11)
+        for col in cells:
+            for cell in col:
+                self.assertEqual(cell.font, Font(bold=True))
+        # check if the workbook contains the correct values
+        cells = worksheet.iter_rows("A2")
+        for col in cells:
+            for cell in col:
+                self.assertEqual(cell.value, self.my_object.test_param)
+        cells = worksheet.iter_rows("B2")
+        for col in cells:
+            for cell in col:
+                self.assertEqual(cell.value, self.my_object.test_param_2)
+        cells = worksheet.iter_rows("C2")
+        for col in cells:
+            for cell in col:
+                self.assertEqual(cell.value, self.my_object.test_param_4)
+
+
+class TestFilterSetExportMixin(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.dummy_objects_count = 10
+        for cpt in range(cls.dummy_objects_count):
+            DummyModel.objects.create(name=f"dummy-name-{cpt}")
+
+        cls.my_class_instance = TestViewSearch()
+
+    def test_filterset_export_mixin_return_all_objects_if_no_filters_specified(self):
+        qs = self.my_class_instance.get_queryset_export("")
+        self.assertEqual(qs.count(), self.dummy_objects_count)
+        qs = self.my_class_instance.get_export_objects(filters="")
+        self.assertEqual(qs.count(), self.dummy_objects_count)
+
+    def test_filterset_export_mixin_return_filtered_queryset(self):
+        qs = self.my_class_instance.get_queryset_export("name=dummy-name-2")
+        self.assertEqual(qs.count(), 1)
+        qs = self.my_class_instance.get_export_objects(filters="name=dummy-name-2")
+        self.assertEqual(qs.count(), 1)
+
+    def test_filterset_export_mixin_raises_validation_error_if_filterset_is_not_valid(self):
+        # TODO I don't know yet how to do that
+        pass
+
+
+class TestQuerySetExportMixin(TestCase):
+    pass

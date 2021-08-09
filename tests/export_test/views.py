@@ -2,46 +2,22 @@ from django_filters import FilterSet
 from django_filters.views import FilterView
 
 from osis_export.contrib.export_mixins import ExcelFilterSetExportMixin
-from osis_export.models import Export
+from osis_export.tests.export_test.models import DummyModel
 
 
-class ExportFilter(FilterSet):
+class DummyFilter(FilterSet):
     class Meta:
-        model = Export
-        fields = [
-            "called_from_class",
-            "filters",
-            "person",
-            "job_uuid",
-            "file_name",
-            "type",
-            "created_at",
-        ]
+        model = DummyModel
+        fields = ["name"]
 
 
 class TestViewSearch(ExcelFilterSetExportMixin, FilterView):
     def get_header(self):
-        return [
-            "called_from_class",
-            "filters",
-            "person",
-            "job_uuid",
-            "file_name",
-            "type",
-            "created_at",
-        ]
+        return ["name"]
 
     def get_data(self):
-        return [
-            "called_from_class",
-            "filters",
-            "person",
-            "job_uuid",
-            "file_name",
-            "type",
-            "created_at",
-        ]
+        return ["name"]
 
-    model = Export
-    template_name = "export_test/export_search.html"
-    filterset_class = ExportFilter
+    model = DummyModel
+    template_name = "export_test/dummy_search.html"
+    filterset_class = DummyFilter

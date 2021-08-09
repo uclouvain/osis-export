@@ -27,8 +27,8 @@ class FilterSetExportMixin(QuerySetExportMixin):
         # Now get the filterset class and instantiate it with the filters
         filterset = self.get_filterset_class()(data=filters_dict)
         if filterset.is_valid():
-            # and finally get back the initial queryset
-            return filterset.qs
+            # and finally get back the initial queryset results
+            return filterset.qs.all()
         raise ValidationError("The formset is not valid")
 
 
@@ -63,7 +63,8 @@ class ExcelFileExportMixin(FileExportMixin):
     @staticmethod
     def get_attr(export, data):
         """Return str representation of `export.data`, or an empty string if None."""
-        return str(getattr(export, data)) if data is not None else ""
+        attr = getattr(export, data)
+        return str(attr) if attr is not None else ""
 
     def generate_file(self, **kwargs):
         workbook = Workbook()
@@ -81,7 +82,7 @@ class ExcelFileExportMixin(FileExportMixin):
         # add data
         export_objects = self.get_export_objects(filters=kwargs.get("filters"))
         sheet_datas = self.get_data()
-        for export in export_objects.all():
+        for export in export_objects:
             worksheet.append(
                 [self.get_attr(export, sheet_data) for sheet_data in sheet_datas]
             )

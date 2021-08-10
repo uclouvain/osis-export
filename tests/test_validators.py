@@ -24,8 +24,12 @@ class TestValidators(TestCase):
         with self.assertRaises(ValidationError):
             export.full_clean()
 
-    def test_called_from_class_validation_raises_error_if_is_not_subclass_of_export_mixins(self):
-        self.export_data["called_from_class"] = "osis_export.tests.test_validators.TestValidators"
+    def test_called_from_class_validation_raises_error_if_is_not_subclass_of_export_mixins(
+        self,
+    ):
+        self.export_data[
+            "called_from_class"
+        ] = "osis_export.tests.test_validators.TestValidators"
         export = Export(**self.export_data)
 
         with self.assertRaises(ValidationError):

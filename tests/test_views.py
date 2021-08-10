@@ -1,8 +1,7 @@
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
-from django_filters.views import FilterView
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 
@@ -221,26 +220,22 @@ class TestFilterSetExportMixin(TestCase):
     def setUpTestData(cls):
         cls.dummy_objects_count = 10
         for cpt in range(cls.dummy_objects_count):
-            DummyModel.objects.create(name=f"dummy-name-{cpt}")
+            DummyModel.objects.create(name=f"dummy-name-{cpt}", selectable_value="A")
 
         cls.my_class_instance = TestViewSearch()
 
-    def test_filterset_export_mixin_return_all_objects_if_no_filters_specified(self):
+    def test_return_all_objects_if_no_filters_specified(self):
         qs = self.my_class_instance.get_queryset_export("")
         self.assertEqual(qs.count(), self.dummy_objects_count)
         qs = self.my_class_instance.get_export_objects(filters="")
         self.assertEqual(qs.count(), self.dummy_objects_count)
 
-    def test_filterset_export_mixin_return_filtered_queryset(self):
+    def test_return_filtered_queryset(self):
         qs = self.my_class_instance.get_queryset_export("name=dummy-name-2")
         self.assertEqual(qs.count(), 1)
         qs = self.my_class_instance.get_export_objects(filters="name=dummy-name-2")
         self.assertEqual(qs.count(), 1)
 
-    def test_filterset_export_mixin_raises_validation_error_if_filterset_is_not_valid(self):
-        # TODO I don't know yet how to do that
-        pass
-
-
-class TestQuerySetExportMixin(TestCase):
-    pass
+    def test_raises_validation_error_if_filterset_is_not_valid(self):
+        with self.assertRaises(ValidationError):
+            self.my_class_instance.get_queryset_export("selectable_value=Z")

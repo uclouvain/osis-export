@@ -16,15 +16,19 @@ def export_task(
         raise ValueError("type must be in the ExportTypes values")
 
     context_view = context["view"]
-    called_from_class = f"{context_view.__module__}.{context_view.__class__.__name__}"
+    called_from_class = "{}.{}".format(
+        context_view.__module__, context_view.__class__.__name__
+    )
     validate_export_mixin_inheritance(called_from_class)
 
     if file_name is None:
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        file_name = f"export-{name}-{today}"
+        file_name = "export-{}-{}".format(name, today)
 
     return {
-        "export_button_text": _(f"Export in {ExportTypes.get_value(file_type)} file"),
+        "export_button_text": (
+            _("Export in %(type)s file") % {"type": {ExportTypes.get_value(file_type)}}
+        ),
         "form": ExportForm(
             initial={
                 "async_task_name": name,

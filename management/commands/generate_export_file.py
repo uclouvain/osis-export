@@ -19,7 +19,9 @@ class Command(BaseCommand):
             # save file into an Upload object in order to reuse osis_document
             token = save_raw_upload(
                 file,
-                f"{export.file_name}{base_class_instance.get_file_extension()}",
+                "{}{}".format(
+                    export.file_name, base_class_instance.get_file_extension()
+                ),
                 base_class_instance.get_mimetype(),
             )
             export.file = [token.token]

@@ -220,7 +220,9 @@ class TestFilterSetExportMixin(TestCase):
     def setUpTestData(cls):
         cls.dummy_objects_count = 10
         for cpt in range(cls.dummy_objects_count):
-            DummyModel.objects.create(name=f"dummy-name-{cpt}", selectable_value="A")
+            DummyModel.objects.create(
+                name="dummy-name-{}".format(cpt), selectable_value="A"
+            )
 
         cls.my_class_instance = TestViewSearch()
 

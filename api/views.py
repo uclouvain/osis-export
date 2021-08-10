@@ -15,7 +15,13 @@ class AsyncExport(BaseFormView):
     def form_invalid(self, form):
         messages.error(
             self.request,
-            f"{_('The requested export is not valid, please contact the site administrator')} : {form.errors}",
+            "{message} : {errors}".format(
+                message=_(
+                    "The requested export is not valid, please contact the site "
+                    "administrator "
+                ),
+                errors=form.errors,
+            ),
             extra_tags="safe",
         )
         # redirect to the initial page

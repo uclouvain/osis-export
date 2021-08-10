@@ -8,16 +8,16 @@ from osis_export.tests.export_test.models import DummyModel
 class DummyFilter(FilterSet):
     class Meta:
         model = DummyModel
-        fields = ["name"]
+        fields = ["name", "selectable_value"]
 
 
 class TestViewSearch(ExcelFilterSetExportMixin, FilterView):
-    def get_header(self):
-        return ["name"]
-
-    def get_data(self):
-        return ["name"]
-
     model = DummyModel
     template_name = "export_test/dummy_search.html"
     filterset_class = DummyFilter
+
+    def get_header(self):
+        return ["name", "selectable value"]
+
+    def get_data(self):
+        return ["name", "selectable_value"]

@@ -1,7 +1,5 @@
 from django.test import TestCase
 
-from base.tests.factories.person import PersonFactory
-from osis_async.models import AsyncTask
 from osis_async.models.enums import TaskStates
 from osis_async.tests.factory import AsyncTaskFactory
 from osis_export.models import Export

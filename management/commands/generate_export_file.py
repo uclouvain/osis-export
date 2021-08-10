@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.utils.module_loading import import_string
 
+from osis_async.models.enums import TaskStates
+from osis_async.utils import update_task
 from osis_document.utils import save_raw_upload
 from osis_export.models import Export
 
@@ -22,3 +24,4 @@ class Command(BaseCommand):
             )
             export.file = [token.token]
             export.save()
+            update_task(export.job_uuid, progression=100, state=TaskStates.DONE.name)

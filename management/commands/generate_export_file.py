@@ -1,10 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.utils.module_loading import import_string
+from django.utils.translation import gettext as _
 
 from osis_async.models.enums import TaskStates
 from osis_async.utils import update_task
 from osis_document.utils import save_raw_upload
 from osis_export.models import Export
+from osis_notification.models import WebNotification
 
 
 class Command(BaseCommand):
@@ -27,3 +29,7 @@ class Command(BaseCommand):
             export.file = [token.token]
             export.save()
             update_task(export.job_uuid, progression=100, state=TaskStates.DONE.name)
+            payload = "{}: {}".format(
+                _("Your document is available here"), token.upload.file.url
+            )
+            WebNotification.objects.create(person=export.person, payload=payload)

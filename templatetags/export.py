@@ -27,7 +27,7 @@ def export_task(
 
     return {
         "export_button_text": (
-            _("Export in %(type)s file") % {"type": {ExportTypes.get_value(file_type)}}
+            _("Export in %(type)s file") % {"type": ExportTypes.get_value(file_type)}
         ),
         "form": ExportForm(
             initial={

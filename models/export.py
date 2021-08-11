@@ -11,9 +11,11 @@ from osis_export.models.validators import validate_export_mixin_inheritance
 
 class ExportManager(models.Manager):
     def not_generated(self):
-        asynchronous_manager = import_string(settings.ASYNCHRONOUS_MANAGER_CLS)()
-        pending_tasks = asynchronous_manager.get_pending_tasks()
-        return self.get_queryset().filter(job_uuid__in=pending_tasks)
+        """Returns all the pending export jobs"""
+        pending_jobs_uuid = import_string(
+            settings.OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS
+        ).get_pending_job_uuids()
+        return self.get_queryset().filter(job_uuid__in=pending_jobs_uuid)
 
 
 class Export(models.Model):

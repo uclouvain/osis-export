@@ -42,7 +42,9 @@ from osis_export.contrib.async_manager import AsyncManager
 
 
 class AsyncTaskManager(AsyncManager):
-    def get_pending_tasks(self):
+    @staticmethod
+    def get_pending_job_uuids():
+        """"Must return the pending export job uuids"""
         pending_tasks = AsyncTask.objects.filter(
             state=TaskStates.PENDING.name
         ).values_list("uuid", flat=True)
@@ -55,7 +57,7 @@ The example bellow uses the `osis_async` module.
 
 Add the full path to the asynchronous manager class in your settings :
 ```python
-ASYNCHRONOUS_MANAGER_CLS = 'backoffice.settings.osis-export.async_manager.AsyncTaskManager'
+OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS = 'backoffice.settings.osis_export.async_manager.AsyncTaskManager'
 ```
 
 # Using OSIS Export
@@ -65,28 +67,56 @@ ASYNCHRONOUS_MANAGER_CLS = 'backoffice.settings.osis-export.async_manager.AsyncT
 ## Mixins
 
 There is a mixin for each type of export you may want. Here is the list of export types, and their related mixins :
-- Excel file : `ExcelExportMixin`
-- PDF file : `PDFExportMixin`
+- Excel file : `ExcelFilterSetExportMixin`
+- PDF file : `PDFFilterSetExportMixin` -> TODO
 
 _Please see the related chapter about mixin specificities for details._
 
-Simply add the selected mixin to the view you will be using to generate the exports :
+Simply add the selected mixin to the view you will be using to generate the exports and implement all the abstract methods:
 ```python
-from osis_export.api.views import ExcelExportMixin
+from osis_export.contrib.export_mixins import ExcelFilterSetExportMixin
 
-class MyListView(ExcelExportMixin, FilterView):
-    pass
+class MyListView(ExcelFilterSetExportMixin, FilterView):
+    # implement abstract methods, see related chapters below
 ```
-
++
 Please note that any view using an export mixin __must__ inherit from `FilterView`.
 
-### ExcelExportMixin
+### ExcelFilterSetExportMixin
 
 In order to use this mixin, you must implement the following methods :
 - `get_headers`: must return a list of all the headers.
-- `get_data`: must return a list of all the data.
+- `get_row_data`: must return a list of all the row data.
 
-###PDFExportMixin
+example:
+```python
+class MyListView(ExcelFilterSetExportMixin, FilterView):
+    def get_header(self):
+        return [
+            "name",
+            "description",
+            "place",
+            "created at",
+            "additional value",
+        ]
+
+    def get_row_data(self, row):
+        return [
+            row.name,
+            row.description,
+            str(row.place),
+            row.created_at.strftime("%m/%d/%Y, %H:%M:%S"),
+            str(row.additional_value) if row.additional_value is not None else "",
+        ]
+```
+
+You can change the representation of the data using `get_row_data`, like above with strftime on a date field or even with the place field calling its str representation.
+
+Also, you may handle the representation of a `None` value by yourself, like it is done with the `additional_value`.
+
+_Please note that all the returned values must be strings._
+
+### PDFFilterSetExportMixin -> TODO
 
 In order to use this mixin, you must implement the following methods :
 - `get_data`: must return a list of all the data.

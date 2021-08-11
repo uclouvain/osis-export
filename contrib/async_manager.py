@@ -2,5 +2,7 @@ import abc
 
 
 class AsyncManager(abc.ABC):
-    def get_pending_tasks(self):
+    @staticmethod
+    def get_pending_job_uuids():
+        """Must return the pending export job uuids"""
         raise NotImplementedError

@@ -177,16 +177,10 @@ class TestExcelFileExportMixin(TestCase):
             def get_header(self):
                 return ["test param", "test param 2", "test param 4"]
 
-            def get_data(self):
-                return ["test_param", "test_param_2", "test_param_4"]
+            def get_row_data(self, row):
+                return [row.test_param, row.test_param_2, row.test_param_4]
 
         cls.my_class_instance = MyClass()
-
-    def test_get_attr_returns_expected_data(self):
-        my_attr = ExcelFileExportMixin.get_attr(self.my_object, "test_param")
-        self.assertEqual(my_attr, self.my_object.test_param)
-        my_attr = ExcelFileExportMixin.get_attr(self.my_object, "test_param_2")
-        self.assertEqual(my_attr, "")
 
     def test_generate_file_creates_excel_file(self):
         file = self.my_class_instance.generate_file()

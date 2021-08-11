@@ -19,5 +19,5 @@ class TestViewSearch(ExcelFilterSetExportMixin, FilterView):
     def get_header(self):
         return ["name", "selectable value"]
 
-    def get_data(self):
-        return ["name", "selectable_value"]
+    def get_row_data(self, row):
+        return [row.name, row.selectable_value]

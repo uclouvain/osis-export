@@ -57,14 +57,8 @@ class ExcelFileExportMixin(FileExportMixin):
     def get_header(self):
         raise NotImplementedError
 
-    def get_data(self):
+    def get_row_data(self, row):
         raise NotImplementedError
-
-    @staticmethod
-    def get_attr(export, data):
-        """Return str representation of `export.data`, or an empty string if None."""
-        attr = getattr(export, data)
-        return str(attr) if attr is not None else ""
 
     def generate_file(self, **kwargs):
         workbook = Workbook()
@@ -81,11 +75,8 @@ class ExcelFileExportMixin(FileExportMixin):
 
         # add data
         export_objects = self.get_export_objects(filters=kwargs.get("filters"))
-        sheet_datas = self.get_data()
         for export in export_objects:
-            worksheet.append(
-                [self.get_attr(export, sheet_data) for sheet_data in sheet_datas]
-            )
+            worksheet.append(self.get_row_data(export))
 
         # stream back the file
         with NamedTemporaryFile() as tmp:

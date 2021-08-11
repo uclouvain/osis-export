@@ -1,3 +1,4 @@
+from django.http import QueryDict
 from django.template.defaulttags import register
 from django.utils.datetime_safe import datetime
 from django.utils.text import slugify
@@ -25,6 +26,8 @@ def export_task(
         today = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         file_name = "export-{}-{}".format(name, today)
 
+    filters = QueryDict(context.request.GET.urlencode(), mutable=True)
+    filters.update(kwargs)
     return {
         "export_button_text": (
             _("Export in %(type)s file") % {"type": ExportTypes.get_value(file_type)}
@@ -35,7 +38,7 @@ def export_task(
                 "async_task_description": description,
                 "async_task_ttl": ttl,
                 "called_from_class": called_from_class,
-                "filters": context.request.GET.urlencode(),
+                "filters": filters.urlencode(),
                 # 'next' is used to redirect to the same exact result page after export
                 "next": context.request.get_full_path(),
                 "type": file_type,

@@ -1,0 +1,143 @@
+info:
+  description: ''
+  title: ''
+  version: ''
+openapi: 3.0.0
+paths:
+  /:
+    post:
+      description: Create an asynchronous export.
+      operationId: export_create
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/X-User-FirstName'
+        - $ref: '#/components/parameters/X-User-LastName'
+        - $ref: '#/components/parameters/X-User-Email'
+        - $ref: '#/components/parameters/X-User-GlobalID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportCreate'
+      responses:
+        '302':
+          description: Response redirect
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      tags:
+      - export
+servers:
+  - url: https://{environment}.osis.uclouvain.be/exports/v1/
+    variables:
+      environment:
+        default: dev
+        enum:
+          - dev # Development server
+          - qa # Staging server
+          - test # Test server
+  - url: https://osis.uclouvain.be/api/exports/v1/
+    description: 'Production server'
+components:
+  parameters:
+    Accept-Language:
+      in: header
+      name: Accept-Language
+      description: >
+        The header advertises which languages the client is able to understand, and which locale variant is preferred. (By languages, we mean natural languages, such as English, and not programming languages.)
+      schema:
+        $ref: '#/components/schemas/AcceptedLanguageEnum'
+      required: false
+    X-User-FirstName:
+      in: header
+      name: X-User-FirstName
+      schema:
+        type: string
+      required: false
+    X-User-LastName:
+      in: header
+      name: X-User-LastName
+      schema:
+        type: string
+      required: false
+    X-User-Email:
+      in: header
+      name: X-User-Email
+      schema:
+        type: string
+      required: false
+    X-User-GlobalID:
+      in: header
+      name: X-User-GlobalID
+      schema:
+        type: string
+      required: false
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    AcceptedLanguageEnum:
+      type: string
+      enum:
+        - 'en'
+        - 'fr-be'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+    ExportTypeEnum:
+      type: string
+      enum:
+        - 'EXCEL'
+        - 'PDF'
+    ExportCreate:
+      type: object
+      properties:
+        async_task_name:
+          type: string
+          example: 'Export data'
+        async_task_description:
+          type: string
+          example: 'Exporting data in an Excel file'
+        async_task_ttl:
+          type: integer
+          example: 42
+        next:
+          type: string
+          example: '/program_management/'
+        called_from_class:
+          type: string
+          example: 'program_management.views.search.EducationGroupSearch'
+        filters:
+          type: string
+          example: 'academic_year=41'
+        type:
+          $ref: '#/components/schemas/ExportTypeEnum'
+        file_name:
+          type: string
+          example: 'my_custom_file_name'
+      required:
+        - async_task_name
+        - async_task_description
+        - next
+        - called_from_class
+        - type
+        - file_name

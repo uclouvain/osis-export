@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils.module_loading import import_string
 from django.views.generic.edit import BaseFormView
 from django.utils.translation import gettext as _
 
-from osis_async.models import AsyncTask
 from osis_export.api.forms import ExportForm
 
 
@@ -39,10 +40,11 @@ class AsyncExport(BaseFormView):
         async_task_ttl = cleaned_data.get("async_task_ttl", None)
         if async_task_ttl is not None:
             async_task_kwargs["time_to_live"] = async_task_ttl
-        async_task = AsyncTask.objects.create(**async_task_kwargs)
+        task_manager = import_string(settings.OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS)
+        async_task_uuid = task_manager.create(**async_task_kwargs)
 
         export = form.save(commit=False)
-        export.job_uuid = async_task.uuid
+        export.job_uuid = async_task_uuid
         export.person = person
         export.type = cleaned_data.get("type")
         export.file_name = cleaned_data.get("file_name")

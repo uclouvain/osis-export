@@ -1,3 +1,5 @@
+import datetime
+
 from django_filters import FilterSet
 from django_filters.views import FilterView
 
@@ -20,4 +22,4 @@ class TestViewSearch(ExcelFilterSetExportMixin, FilterView):
         return ["name", "selectable value"]
 
     def get_row_data(self, row):
-        return [row.name, row.selectable_value]
+        return [row.name, datetime.datetime.now()]

@@ -3,12 +3,14 @@ branch = True
 source = osis_export
 omit =
     */migrations/*
-    venv/*
     */tests/*
     */admin.py
-    */tasks/*
+    */tasks/*.py
 
 [report]
 skip_covered = True
 show_missing = True
 sort = Miss
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError

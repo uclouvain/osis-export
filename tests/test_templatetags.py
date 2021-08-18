@@ -10,7 +10,10 @@ import osis_export.tests.export_test.views
 from base.tests.factories.user import UserFactory
 
 
-@override_settings(ROOT_URLCONF="osis_export.tests.export_test.urls")
+@override_settings(
+    ROOT_URLCONF="osis_export.tests.export_test.urls",
+    OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS='osis_export.tests.export_test.async_manager',
+)
 class TestTemplateTags(TestCase):
     @classmethod
     def setUpTestData(cls):

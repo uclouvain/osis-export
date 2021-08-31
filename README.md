@@ -11,7 +11,6 @@ Requirements
 - Django 2.2+
 - Django REST Framework 3.12+
 - Django Filters
-- Celery 4+
 - OSIS Document
 - OSIS Notification
 

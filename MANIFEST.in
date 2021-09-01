@@ -1,0 +1,4 @@
+recursive-exclude osis_export/tests *
+recursive-include osis_export/static *
+recursive-include osis_export/templates *
+recursive-include osis_export/locale *

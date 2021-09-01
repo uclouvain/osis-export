@@ -16,6 +16,21 @@ Requirements
 
 # How to install ?
 
+## For production
+
+```bash
+# From your osis install, with python environment activated
+pip install git+https://github.com/uclouvain/osis-export.git@dev#egg=osis_export
+```
+
+## For development
+
+```bash
+# From your osis install, with python environment activated
+git clone git@github.com:uclouvain/osis-export.git
+pip install -e ./osis-export
+```
+
 ## Configuring Django
 
 Add `osis_export` to `INSTALLED_APPS` :

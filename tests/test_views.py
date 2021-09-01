@@ -1,13 +1,14 @@
+import uuid
+from unittest.mock import patch
+
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.files.base import ContentFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 
 from base.tests.factories.person import PersonFactory
-from osis_async.models import AsyncTask
-from osis_async.models.enums import TaskStates
 from osis_export.contrib.export_mixins import (
     ExcelFileExportMixin,
     ExportMixin,
@@ -18,6 +19,9 @@ from osis_export.tests.export_test.models import DummyModel
 from osis_export.tests.export_test.views import TestViewSearch
 
 
+@override_settings(
+    OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS='osis_export.tests.export_test.async_manager.AsyncTaskManager',
+)
 class TestAsyncExport(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -49,7 +53,9 @@ class TestAsyncExport(TestCase):
             list(response.context["messages"])[0].message,
         )
 
-    def test_async_export_view_must_redirect_to_next_parameter_if_valid(self):
+    @patch('osis_export.tests.export_test.async_manager.AsyncTaskManager.create')
+    def test_async_export_view_must_redirect_to_next_parameter_if_valid(self, create_task):
+        create_task.return_value = uuid.uuid4()
         response = self.client.post(self.url, self.export_data)
         self.assertEqual(response.status_code, 302)
         # must redirect to the given 'next' parameter
@@ -75,30 +81,22 @@ class TestAsyncExport(TestCase):
         # must redirect to the given 'next' parameter
         self.assertEqual(response.url, "/")
 
-    def test_async_export_view_set_default_ttl_if_not_given(self):
+    @patch('osis_export.tests.export_test.async_manager.AsyncTaskManager.create')
+    def test_async_export_view_set_default_ttl_if_not_given(self, create_task):
+        create_task.return_value = uuid.uuid4()
         self.assertEqual(Export.objects.count(), 0)
-        self.assertEqual(AsyncTask.objects.count(), 0)
+        create_task.assert_not_called()
 
         response = self.client.post(self.url, self.export_data)
         self.assertEqual(response.status_code, 302)
 
-        # Both Export and related AsyncTask must have been created
+        # Export must have been created and create() called
         self.assertEqual(Export.objects.count(), 1)
-        self.assertEqual(AsyncTask.objects.count(), 1)
-
-        # now test the values of the related async task
-        async_task = AsyncTask.objects.get()
-        self.assertEqual(async_task.name, self.export_data["async_task_name"])
-        self.assertEqual(
-            async_task.description, self.export_data["async_task_description"]
+        create_task.assert_called_with(
+            name=self.export_data["async_task_name"],
+            description=self.export_data["async_task_description"],
+            person=self.person,
         )
-        self.assertEqual(async_task.person, self.person)
-        self.assertEqual(async_task.time_to_live, 5)
-        self.assertEqual(async_task.state, TaskStates.PENDING.name)
-        self.assertEqual(async_task.progression, 0)
-        self.assertIsNotNone(async_task.created_at)
-        self.assertIsNone(async_task.started_at)
-        self.assertIsNone(async_task.completed_at)
 
         # now test the values of the related export
         export = Export.objects.get()
@@ -107,27 +105,29 @@ class TestAsyncExport(TestCase):
         )
         self.assertEqual(export.filters, self.export_data["filters"])
         self.assertEqual(export.person, self.person)
-        self.assertEqual(export.job_uuid, async_task.uuid)
+        self.assertEqual(export.job_uuid, create_task.return_value)
         self.assertEqual(export.file, [])
         self.assertEqual(export.file_name, self.export_data["file_name"])
         self.assertEqual(export.type, self.export_data["type"])
         self.assertIsNotNone(export.created_at)
 
-    def test_async_export_view_with_ttl(self):
+    @patch('osis_export.tests.export_test.async_manager.AsyncTaskManager.create')
+    def test_async_export_view_with_ttl(self, create_task):
+        create_task.return_value = uuid.uuid4()
         self.assertEqual(Export.objects.count(), 0)
-        self.assertEqual(AsyncTask.objects.count(), 0)
 
         data = {**self.export_data, "async_task_ttl": 42}
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
 
-        # Both Export and related AsyncTask must have been created
+        # Export must have been created and create() called
         self.assertEqual(Export.objects.count(), 1)
-        self.assertEqual(AsyncTask.objects.count(), 1)
-
-        # and the value of the async task ttl should be set
-        async_task = AsyncTask.objects.get()
-        self.assertEqual(async_task.time_to_live, 42)
+        create_task.assert_called_with(
+            name=self.export_data["async_task_name"],
+            description=self.export_data["async_task_description"],
+            person=self.person,
+            time_to_live=42,
+        )
 
 
 class TestFileExportMixin(TestCase):

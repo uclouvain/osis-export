@@ -1,6 +1,6 @@
 # OSIS Export
 
-`OSIS Export` is a Django application to manage asynchronous exports across OSIS plateform.
+`OSIS Export` is a Django application to manage asynchronous exports across OSIS platform.
 
 
 Requirements
@@ -11,7 +11,8 @@ Requirements
 - Django 2.2+
 - Django REST Framework 3.12+
 - Django Filters
-- Celery 4+
+- OSIS Document
+- OSIS Notification
 
 # How to install ?
 
@@ -38,6 +39,7 @@ The manager must inherit from the interface `AsyncManager` define in `osis_expor
 ```python
 from osis_async.models import AsyncTask
 from osis_async.models.enums import TaskStates
+from osis_async.utils import update_task
 from osis_export.contrib.async_manager import AsyncManager
 
 
@@ -49,9 +51,20 @@ class AsyncTaskManager(AsyncManager):
             state=TaskStates.PENDING.name
         ).values_list("uuid", flat=True)
         return pending_tasks
+
+    @staticmethod
+    def update(
+        uuid,
+        progression=None,
+        description=None,
+        state=None,
+        started_at=None,
+        completed_at=None,
+    ):
+        update_task(uuid, progression, description, state, started_at, completed_at)
 ```
 
-The example bellow uses the `osis_async` module.
+The above example uses the `osis_async` module.
 
 ### Add it to your settings
 

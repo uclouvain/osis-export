@@ -6,7 +6,7 @@ from osis_export.models import Export
 class ExportForm(forms.ModelForm):
     async_task_name = forms.CharField(max_length=100, widget=forms.HiddenInput())
     async_task_description = forms.CharField(widget=forms.HiddenInput())
-    async_task_ttl = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    async_task_ttl = forms.IntegerField(required=False, widget=forms.HiddenInput(), initial=15)
     next = forms.CharField(widget=forms.HiddenInput())
 
     class Meta:

@@ -20,10 +20,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('called_from_class', models.TextField(help_text='Export called from this class', validators=[osis_export.models.validators.validate_export_mixin_inheritance])),
-                ('filters', models.TextField(blank=True, verbose_name='Filtres')),
+                ('filters', models.TextField(blank=True, verbose_name='Filters')),
                 ('job_uuid', models.UUIDField(verbose_name='UUID of the related task job')),
                 ('file', osis_document.contrib.fields.FileField(base_field=models.UUIDField(), blank=True, default=list, null=True, size=None)),
-                ('file_name', models.CharField(max_length=100, verbose_name='Nom de fichier')),
+                ('file_name', models.CharField(max_length=100, verbose_name='File name')),
                 ('type', models.CharField(choices=[('EXCEL', 'Excel'), ('PDF', 'PDF')], max_length=25, verbose_name='Type')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created at')),
                 ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='base.Person')),

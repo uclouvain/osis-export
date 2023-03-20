@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -24,6 +25,22 @@ class TestGenerateExportFile(TestCase):
 
     def setUp(self) -> None:
         self.client.force_login(self.person.user)
+
+        # Mock documents
+        patcher = patch("osis_document.api.utils.get_remote_token", return_value="foobar")
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        patcher = patch("osis_document.api.utils.get_remote_metadata", return_value={"name": "myfile"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        patcher = patch(
+            "osis_document.api.utils.confirm_remote_upload",
+            side_effect=lambda token, upload_to: uuid.uuid4(),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     @patch('osis_export.tests.export_test.async_manager.AsyncTaskManager.get_pending_job_uuids')
     def test_generate_export_file_changes_related_async_state(self, pending_job_uuids):

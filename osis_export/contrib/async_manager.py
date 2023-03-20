@@ -4,6 +4,7 @@ import uuid
 from uuid import UUID
 
 from base.models.person import Person
+from osis_async.models.enums import TaskState
 
 
 class AsyncManager(abc.ABC):
@@ -17,7 +18,7 @@ class AsyncManager(abc.ABC):
         uuid: UUID,
         progression: int = None,
         description: str = None,
-        state: str = None,
+        state: TaskState = None,
         started_at: datetime.datetime = None,
         completed_at: datetime.datetime = None,
     ) -> None:

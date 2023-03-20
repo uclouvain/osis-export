@@ -7,6 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from openpyxl import load_workbook
 from openpyxl.styles import Font
+from openpyxl.worksheet.worksheet import Worksheet
 
 from base.tests.factories.person import PersonFactory
 from osis_export.contrib.export_mixins import (
@@ -188,22 +189,22 @@ class TestExcelFileExportMixin(TestCase):
         workbook = load_workbook(ContentFile(file))
         worksheet = workbook.active
         # check if the first row is in bold style
-        cells = worksheet.iter_rows("A1:C1")
+        cells = worksheet.iter_rows(min_row=1, max_row=1)
         # check that we have 11 rows : 1 for the header and 10 for data
-        self.assertEqual(worksheet.get_highest_row(), 11)
+        self.assertEqual(worksheet.max_row, 11)
         for col in cells:
             for cell in col:
                 self.assertEqual(cell.font, Font(bold=True))
         # check if the workbook contains the correct values
-        cells = worksheet.iter_rows("A2")
+        cells = worksheet.iter_cols(min_col=1, max_col=1, min_row=2)
         for col in cells:
             for cell in col:
                 self.assertEqual(cell.value, self.my_object.test_param)
-        cells = worksheet.iter_rows("B2")
+        cells = worksheet.iter_cols(min_col=2, max_col=2, min_row=2)
         for col in cells:
             for cell in col:
                 self.assertEqual(cell.value, self.my_object.test_param_2)
-        cells = worksheet.iter_rows("C2")
+        cells = worksheet.iter_cols(min_col=3, max_col=3, min_row=2)
         for col in cells:
             for cell in col:
                 self.assertEqual(cell.value, self.my_object.test_param_4)

@@ -1,0 +1,80 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2021 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-09 16:05+0200\n"
+"PO-Revision-Date: 2019-04-15 08:35+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_BE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 2.2.1\n"
+
+msgid "Class does not inherit from ExportMixin and FileExportMixin"
+msgstr "La classe n'hérite pas de ExportMixin et FileExportMixin"
+
+msgid "Created at"
+msgstr "Créé le"
+
+msgid "Created by"
+msgstr "Créé le"
+
+msgid "Creation date"
+msgstr "Date de création"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Excel"
+msgstr "Excel"
+
+msgid "Export called from this class"
+msgstr "Export appelé depuis cette classe"
+
+#, python-format
+msgid "Export in %(type)s file"
+msgstr "Export dans un fichier %(type)s"
+
+msgid "File name"
+msgstr "Nom du fichier"
+
+msgid "Filters"
+msgstr "Filtres"
+
+msgid "Legend"
+msgstr "Légende"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Parameters"
+msgstr "Paramètres"
+
+msgid ""
+"The requested export is not valid, please contact the site administrator "
+msgstr ""
+"L'export demandé n'est pas valide, merci de contacter l'administrateur du "
+"site "
+
+msgid "Type"
+msgstr "Type"
+
+msgid "UUID of the related task job"
+msgstr "UUID de la tâche concernée"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Your document is available here"
+msgstr "Votre document est disponible ici"

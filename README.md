@@ -53,7 +53,7 @@ The manager must inherit from the interface `AsyncManager` define in `osis_expor
 
 ```python
 from osis_async.models import AsyncTask
-from osis_async.models.enums import TaskStates
+from osis_async.models.enums import TaskState
 from osis_async.utils import update_task
 from osis_export.contrib.async_manager import AsyncManager
 
@@ -63,7 +63,7 @@ class AsyncTaskManager(AsyncManager):
     def get_pending_job_uuids():
         """"Must return the pending export job uuids"""
         pending_tasks = AsyncTask.objects.filter(
-            state=TaskStates.PENDING.name
+            state=TaskState.PENDING.name
         ).values_list("uuid", flat=True)
         return pending_tasks
 

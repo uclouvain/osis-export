@@ -6,9 +6,9 @@ from django.utils import timezone, translation
 from django.utils.html import format_html
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
-
 from osis_async.models.enums import TaskState
-from osis_document.utils import save_raw_upload
+from osis_document.api.utils import get_remote_token
+from osis_document.utils import save_raw_content_remotely, get_file_url
 from osis_export.models import Export
 from osis_notification.models import WebNotification
 
@@ -46,9 +46,10 @@ class Command(BaseCommand):
                 file_extension = base_class_instance.get_file_extension()
                 file_mimetype = base_class_instance.get_mimetype()
                 file_name = "{}{}".format(export.file_name, file_extension)
-                token = save_raw_upload(file, file_name, file_mimetype)
-                export.file = [token.token]
+                token = save_raw_content_remotely(file, file_name, file_mimetype)
+                export.file = [token]
                 export.save()
+                read_token = get_remote_token(export.file[0])
                 # and finally update the related async task again
                 task_manager.update(
                     job_uuid,
@@ -59,7 +60,7 @@ class Command(BaseCommand):
                 payload = format_html(
                     "{}: <a href='{}' target='_blank'>{}</a>",
                     _("Your document is available here"),
-                    token.upload.file.url,
+                    get_file_url(read_token),
                     file_name,
                 )
                 WebNotification.objects.create(person=export.person, payload=payload)

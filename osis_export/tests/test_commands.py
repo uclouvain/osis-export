@@ -1,8 +1,9 @@
 import uuid
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from osis_async.models.enums import TaskState
 
 from base.tests.factories.person import PersonFactory
 from osis_export.models import Export
@@ -32,6 +33,13 @@ class TestGenerateExportFile(TestCase):
         self.addCleanup(patcher.stop)
 
         patcher = patch("osis_document.api.utils.get_remote_metadata", return_value={"name": "myfile"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        patcher = patch(
+            'osis_document.utils.save_raw_content_remotely',
+            side_effect=lambda file, file_name, file_mimetype: "foobar",
+        )
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -79,4 +87,4 @@ class TestGenerateExportFile(TestCase):
 
         with self.assertRaises(Exception):
             call_command("generate_export_file")
-        update.assert_called_with(self.export.job_uuid, progression=0, state='ERROR')
+        update.assert_called_with(self.export.job_uuid, progression=0, state=TaskState.ERROR)

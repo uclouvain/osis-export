@@ -184,7 +184,7 @@ class TestExcelFileExportMixin(TestCase):
         cls.my_class_instance = MyClass()
 
     def test_generate_file_creates_excel_file(self):
-        file = self.my_class_instance.generate_file()
+        file = self.my_class_instance.generate_file(person=None, filters='')
         self.assertEqual(type(file), bytes)
         workbook = load_workbook(ContentFile(file))
         worksheet = workbook.active

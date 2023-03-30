@@ -69,7 +69,7 @@ class TestTemplateTags(TestCase):
             rendered_template,
         )
         self.assertInHTML(
-            "<button type='submit' class='btn btn-default'>Export in Excel file</button>",
+            "<button type='submit' class='btn btn-default'>Export dans un fichier Excel</button>",
             rendered_template,
         )
 

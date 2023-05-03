@@ -27,7 +27,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='OSIS Export',
-    version='0.12',
+    version='0.13',
     description='Export tasks API and UI',
     url='http://github.com/uclouvain/osis-export',
     author='Université catholique de Louvain',

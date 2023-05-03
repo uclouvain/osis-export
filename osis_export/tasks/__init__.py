@@ -32,7 +32,7 @@ from . import generate_export_file
 tasks = {
     '|Export| Generate exports': {
         'task': 'osis_export.tasks.generate_export_file.run',
-        'schedule': crontab(minute=1)
+        'schedule': crontab()
     },
 }
 celery_app.conf.beat_schedule.update(tasks)

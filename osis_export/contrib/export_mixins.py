@@ -57,6 +57,18 @@ class FileExportMixin:
             raise ImproperlyConfigured("Specify file_extension on mixin class")
         return self.file_extension
 
+    def get_read_token_extra_kwargs(self) -> Dict:
+        return {}
+
+    def get_task_started_async_manager_extra_kwargs(self) -> Dict:
+        return {}
+
+    def get_task_error_async_manager_extra_kwargs(self, e: Exception) -> Dict:
+        return {}
+
+    def get_task_done_async_manager_extra_kwargs(self, file_name: str, file_url: str) -> Dict:
+        return {}
+
 
 class ExcelFileExportMixin(FileExportMixin):
     file_extension = ".xlsx"

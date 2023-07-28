@@ -22,14 +22,16 @@ class Command(BaseCommand):
             language = export.person.language or settings.LANGUAGE_CODE
             # Update the related async task first
             task_manager = import_string(settings.OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS)
+            # Import and instantiate the base view class
+            base_class_instance = import_string(export.called_from_class)()
+
             task_manager.update(
                 job_uuid,
                 progression=1,
                 state=TaskState.PROCESSING,
                 started_at=timezone.now(),
+                **base_class_instance.get_task_started_async_manager_extra_kwargs()
             )
-            # Import and instantiate the base view class
-            base_class_instance = import_string(export.called_from_class)()
             # Generate the file and the notification in the person's language
             with translation.override(language):
                 # generate the wanted file by calling the method on mixin
@@ -39,7 +41,12 @@ class Command(BaseCommand):
                         filters=export.filters,
                     )
                 except Exception as e:
-                    task_manager.update(job_uuid, progression=0, state=TaskState.ERROR)
+                    task_manager.update(
+                        job_uuid,
+                        progression=0,
+                        state=TaskState.ERROR,
+                        **base_class_instance.get_task_error_async_manager_extra_kwargs(e)
+                    )
                     logging.getLogger(settings.DEFAULT_LOGGER).error(e)
                     raise e
                 # save file into an Upload object in order to reuse osis_document
@@ -49,18 +56,24 @@ class Command(BaseCommand):
                 token = save_raw_content_remotely(file, file_name, file_mimetype)
                 export.file = [token]
                 export.save()
-                read_token = get_remote_token(export.file[0])
+                read_token = get_remote_token(
+                    uuid=export.file[0],
+                    **base_class_instance.get_read_token_extra_kwargs(),
+                )
+                file_url = get_file_url(read_token)
+
                 # and finally update the related async task again
                 task_manager.update(
                     job_uuid,
                     progression=100,
                     state=TaskState.DONE,
                     completed_at=timezone.now(),
+                    **base_class_instance.get_task_done_async_manager_extra_kwargs(file_name, file_url)
                 )
                 payload = format_html(
                     "{}: <a href='{}' target='_blank'>{}</a>",
                     _("Your document is available here"),
-                    get_file_url(read_token),
+                    file_url,
                     file_name,
                 )
                 WebNotification.objects.create(person=export.person, payload=payload)

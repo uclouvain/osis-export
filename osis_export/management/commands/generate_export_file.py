@@ -40,6 +40,19 @@ class Command(BaseCommand):
                         person=export.person,
                         filters=export.filters,
                     )
+
+                    # save file into an Upload object in order to reuse osis_document
+                    file_extension = base_class_instance.get_file_extension()
+                    file_mimetype = base_class_instance.get_mimetype()
+                    file_name = "{}{}".format(export.file_name, file_extension)
+                    token = save_raw_content_remotely(file, file_name, file_mimetype)
+                    export.file = [token]
+                    export.save()
+                    read_token = get_remote_token(
+                        uuid=export.file[0],
+                        **base_class_instance.get_read_token_extra_kwargs(),
+                    )
+                    file_url = get_file_url(read_token)
                 except Exception as e:
                     task_manager.update(
                         job_uuid,
@@ -49,18 +62,6 @@ class Command(BaseCommand):
                     )
                     logging.getLogger(settings.DEFAULT_LOGGER).error(e)
                     raise e
-                # save file into an Upload object in order to reuse osis_document
-                file_extension = base_class_instance.get_file_extension()
-                file_mimetype = base_class_instance.get_mimetype()
-                file_name = "{}{}".format(export.file_name, file_extension)
-                token = save_raw_content_remotely(file, file_name, file_mimetype)
-                export.file = [token]
-                export.save()
-                read_token = get_remote_token(
-                    uuid=export.file[0],
-                    **base_class_instance.get_read_token_extra_kwargs(),
-                )
-                file_url = get_file_url(read_token)
 
                 # and finally update the related async task again
                 task_manager.update(

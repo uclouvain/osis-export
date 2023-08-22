@@ -34,7 +34,10 @@ class Export(models.Model):
     file = FileField(null=True, blank=True)
     file_name = models.CharField(_("File name"), max_length=100)
     type = models.CharField(_("Type"), choices=ExportTypes.choices(), max_length=25)
-
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
-
+    extra_data = models.JSONField(
+        verbose_name=_("Extra data"),
+        blank=True,
+        default=dict,
+    )
     objects = ExportManager()

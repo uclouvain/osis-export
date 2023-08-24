@@ -6,7 +6,7 @@
 #    The core business involves the administration of students, teachers,
 #    courses, programs and so on.
 #
-#    Copyright (C) 2015-2021 Université catholique de Louvain (http://www.uclouvain.be)
+#    Copyright (C) 2015-2023 Université catholique de Louvain (http://www.uclouvain.be)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='OSIS Export',
-    version='0.14.1',
+    version='0.14.2',
     description='Export tasks API and UI',
     url='http://github.com/uclouvain/osis-export',
     author='Université catholique de Louvain',

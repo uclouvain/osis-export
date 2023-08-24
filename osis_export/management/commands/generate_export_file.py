@@ -3,14 +3,12 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone, translation
-from django.utils.html import format_html
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
 from osis_async.models.enums import TaskState
 from osis_document.api.utils import get_remote_token
 from osis_document.utils import save_raw_content_remotely, get_file_url
 from osis_export.models import Export
-from osis_notification.models import WebNotification
 
 
 class Command(BaseCommand):
@@ -20,6 +18,8 @@ class Command(BaseCommand):
         for export in Export.objects.not_generated():
             job_uuid = export.job_uuid
             language = export.person.language or settings.LANGUAGE_CODE
+            export_extra_data = export.extra_data or {}
+
             # Update the related async task first
             task_manager = import_string(settings.OSIS_EXPORT_ASYNCHRONOUS_MANAGER_CLS)
             # Import and instantiate the base view class
@@ -69,12 +69,15 @@ class Command(BaseCommand):
                     progression=100,
                     state=TaskState.DONE,
                     completed_at=timezone.now(),
-                    **base_class_instance.get_task_done_async_manager_extra_kwargs(file_name, file_url)
+                    **base_class_instance.get_task_done_async_manager_extra_kwargs(
+                        file_name,
+                        file_url,
+                        export_extra_data,
+                    )
                 )
-                payload = format_html(
-                    "{}: <a href='{}' target='_blank'>{}</a>",
-                    _("Your document is available here"),
-                    file_url,
+                base_class_instance.post_export_done(
+                    export.person,
                     file_name,
+                    file_url,
+                    export_extra_data,
                 )
-                WebNotification.objects.create(person=export.person, payload=payload)

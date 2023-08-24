@@ -7,12 +7,14 @@ from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.db.models import QuerySet
 from django.http import QueryDict
 from django.utils.formats import date_format
+from django.utils.html import format_html
 from django.utils.translation import gettext as _, gettext_lazy
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
 
 from base.models.person import Person
+from osis_notification.models import WebNotification
 
 
 class ExportMixin:
@@ -57,6 +59,15 @@ class FileExportMixin:
             raise ImproperlyConfigured("Specify file_extension on mixin class")
         return self.file_extension
 
+    def post_export_done(self, person: Person, file_name: str, file_url: str, export_extra_data: Dict) -> None:
+        payload = format_html(
+            "{}: <a href='{}' target='_blank'>{}</a>",
+            _("Your document is available here"),
+            file_url,
+            file_name,
+        )
+        WebNotification.objects.create(person=person, payload=payload)
+
     def get_read_token_extra_kwargs(self) -> Dict:
         return {}
 
@@ -66,7 +77,7 @@ class FileExportMixin:
     def get_task_error_async_manager_extra_kwargs(self, e: Exception) -> Dict:
         return {}
 
-    def get_task_done_async_manager_extra_kwargs(self, file_name: str, file_url: str) -> Dict:
+    def get_task_done_async_manager_extra_kwargs(self, file_name: str, file_url: str, export_extra_data: Dict) -> Dict:
         return {}
 
 

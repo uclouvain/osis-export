@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from base.models.person import Person
 from osis_document.contrib import FileField
+from osis_document.enums import DocumentExpirationPolicy
 from osis_export.models.enums.types import ExportTypes
 from osis_export.models.validators import validate_export_mixin_inheritance
 
@@ -31,7 +32,11 @@ class Export(models.Model):
     filters = models.TextField(_("Filters"), blank=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="+")
     job_uuid = models.UUIDField(_("UUID of the related task job"))
-    file = FileField(null=True, blank=True)
+    file = FileField(
+        null=True,
+        blank=True,
+        document_expiration_policy=DocumentExpirationPolicy.EXPORT_EXPIRATION_POLICY.value,
+    )
     file_name = models.CharField(_("File name"), max_length=100)
     type = models.CharField(_("Type"), choices=ExportTypes.choices(), max_length=25)
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)

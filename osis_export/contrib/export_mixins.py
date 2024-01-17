@@ -136,7 +136,7 @@ class ExcelFileExportMixin(FileExportMixin):
                 cell.font = Font(bold=True)
 
         # add data
-        export_objects = self.get_export_objects(filters=filters)
+        export_objects = self.get_export_objects(filters=filters, person=person)
         for export in export_objects:
             worksheet.append(self.get_row_data(export))
 
